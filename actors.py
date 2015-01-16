@@ -2,7 +2,7 @@ import random
 from methods import *
 from battle import *
 
-#Actor definitions
+# Actor definitions
 class Actor:
     def __init__(self):
         self.name = "Dummy"
@@ -54,7 +54,7 @@ class Actor:
     def item(self, item, target):
         pass
     
-##Player definition
+# Player definition
 class Player(Actor):
     def __init__(self,playerName):
         Actor.__init__(self)
@@ -69,21 +69,68 @@ class Player(Actor):
         self.accuracy = 0.95
         self.critChance = 0.01
         
+    def examine(self,target):
+        text("You take a closer look at " + target.name)
+        print("=" * 15)
+        print("|",target.name)
+        print("| HP: " + str(target.health) + "/" + str(target.maxHealth))
+        print("| Strength:",target.strength)
+        print("| Defense:",target.defense)
+        print("| Accuracy:",str(target.accuracy * 100) + "%")
+        print("| Critical Chance:",str(target.critChance * 100) + "%")
+        print("|",target.desc)
+        print("=" * 15)
+    
+    def runAway(self, enemies, escape):
+        if escape:
+            avgSkill = 0
+            n = 0
+            for i in enemies:
+                avgSkill += (i.accuracy + i.critChance)
+                n += 1
+            avgSkill = avgSkill / n
+            runChance = ((self.accuracy + self.critChance) / avgSkill) * (self.maxHealth / self.health)
+            if random.random() <= runChance:
+                text("You successfully escaped from the battle!")
+                return True
+            else:
+                text("You couldn't escape!")
+                return False
+        else:
+            text("You cannot escape from this battle!")
+            return False
+        
     def levelUp(self):
+        # Excess exp rolls over to the next level
         self.exp = self.exp - self.expNextLevel
+        
+        # Level is incremented
         self.level += 1
         text("You leveled up!")
-        text("You reached Level",self.level)
+        text("You reached Level",str(self.level) + "!")
         print("=" * 15)
+        
+        # Next level's exp requirement is twice that of the previous level
         self.expNextLevel *= 2
+        
+        # Crit chance is increased by a percetage equal to the new level
         self.critChance += self.level * 0.01
         print("Crit Chance +", str(self.level) + "%")
+        
+        # Max health is increased by an amount equal to the new level
         self.maxHealth += self.level
-        print("Crit Chance +", self.level)
+        print("Max Health +", self.level)
+        
+        # Defense is increased by 1
         self.defense += 1
         print("Defense + 1")
+        
+        # Health is refilled (I love it when games do this)
+        # In the future when I finally implement specials and SP, possibly refill SP
         self.health = self.maxHealth
         print("=" * 15)
+        
+        # Player picks to either increase strength or dexterity by one. Lets the player choose their development path a bit.
         text("Choose a level-up bonus!")
         levelUpBonus = options("STRENGTH","DEXTERITY")
         if levelUpBonus == "STRENGTH":
@@ -92,24 +139,16 @@ class Player(Actor):
         else:
             self.dexterity += 1
             print("Dexterity + 1")
-        ''' raises the player to their next level
-            any leftover exp is kept
-            expNextLevel is doubled
-            critChance is increased by a percentage equal to the new level
-            maxHealth is increased by an amount equal to the new level
-            defense is increased by 1
-            either strength or dexterity is increased by 1
-            health is refilled (i always love it when games do that)'''
-            
+    
+    # Renames the player     
     def rename(self):
         text("It's at this point in your adventure that you decide to forge a new\
      itentity for yourself. You're the boss. Who's to tell you what your name is?")
         self.name = input("What shall your new name be? ")
         text("You are now known as " + self.name + ", a name certainly 100, nay, 1000 times\
      the superior of your old monicker.")
-        # renames the player
 
-##Enemy definitions
+# Enemy definitions
 class Enemy(Actor):
     def __init__(self):
         Actor.__init__(self)

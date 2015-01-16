@@ -5,7 +5,14 @@ This game is a side-project that I'm working on to help myself learn Python and 
 
 ## How to Play
 ### Running the game
-This game is run exclusively in the Python console. If you don't have Python installed on your computer (you would know if you did), you can play this game from any online Python interpreter that supports Python 3 (here's one: http://www.tutorialspoint.com/execute_python3_online.php). Just copy the python files into the file list on the left side of the page and execute `main.py`. It's that simple! If you do have Python installed on your computer, just open the file `main.py` in IDLE and hit F5 to start the shell.
+This game is run exclusively in the Python console. 
+
+#### If you don't have Python installed
+If you don't have Python installed on your computer (you would know if you did), you can play this game from any online Python interpreter that supports Python 3 (here's one: http://www.tutorialspoint.com/execute_python3_online.php). Just copy all the python files (`*.py`) into the file list on the left side of the page and execute `main.py`. It's that simple! 
+
+#### If you have Python installed
+If you do have Python installed on your computer, download all the files and extract them into the same folder. Then open the file `start.bat` and edit the line starting with `cd` to use the filepath to this game's folder (i.e. `C:\Users\Joe\Downloads\TMBAG`), then just run the file `start.bat` to play the game from a command prompt.
+Alternatively, you can open the file `main.py` in IDLE and hit F5 to start the shell, although this is a bit slower.
 
 ### Playing the game
 Throughout the game, you interact via supplying text input for various prompts. Prompts are case-insensitive. For most prompts, you can enter `"MENU"` to access the in-game menu to see stats, rename your character, and more.

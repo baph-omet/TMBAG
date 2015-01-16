@@ -4,8 +4,7 @@ class Guard(Enemy):
     def __init__(self):
         Enemy.__init__(self)
         self.name = "Guard"
-        self.sesc = "An alien guard. Blueish-gray skin, four deep, black eyes.\
-     Carries a spear."
+        self.desc = "An alien guard. Blueish-gray skin, four deep, black eyes. Carries a spear."
         self.strength = 1
         self.defense = 0
         self.health = 3
