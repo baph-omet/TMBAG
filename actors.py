@@ -1,5 +1,6 @@
 import random
 from methods import *
+from battle import *
 
 #Actor definitions
 class Actor:
@@ -13,33 +14,42 @@ class Actor:
         self.expYield = 1
         self.items = []
         self.specials = []
-        self.attackChance = 1
-        self.defendChance = 0
-        self.itemChance = 0
-        self.specialChance = 0
         self.accuracy = 1
         self.CritChance = 0
         self.guarding = False
+        self.strengthMod = 0
+        self.defenseMod = 0
+        self.accuracyMod = 0
+        self.critMod = 0
+        self.moneyYield = 1
 
     def attack(self,target):
-        if random.random() > self.accuracy:
+        if random.random() > (self.accuracy + self.accuracyMod):
             text(self.name + "'s attack missed!")
         else:
-            if random.random() <= self.critChance:
+            if random.random() <= (self.critChance + self.critMod):
                 text("Critical hit!")
-                damage = self.strength * 3 - target.defense
+                damage = (self.strength + self.strengthMod) * 3 - (target.defense + target.defenseMod)
             else:
-                damage = self.strength - target.defense
-            text(self.name + " attacked " + target.name + " for " + str(damage)\
+                damage = (self.strength + self.strengthMod) - (target.defense + target.defenseMod)
+            if damage <= 0:
+                text(self.name + "'s attack failed to damage " + target.name + "!")
+            else:
+                text(self.name + " attacked " + target.name + " for " + str(damage)\
                  + " damage.")
-            target.health -= damage
+                target.health -= damage
         # attacks a target. target can be any actor (player or enemy)
 
     def defend(self):
         if not self.guarding:
             self.guarding = True
-            self.defense += 1
+            self.defenseMod += 1
             text(self.name + " raised their guard!")
+    def unDefend(self):
+        if self.guarding:
+            self.guarding = False
+            self.defenseMod -= 1
+            text(self.name + " lowered their guard!")
 
     def item(self, item, target):
         pass
@@ -47,6 +57,7 @@ class Actor:
 ##Player definition
 class Player(Actor):
     def __init__(self,playerName):
+        Actor.__init__(self)
         self.name = playerName
         self.money = 0
         self.level = 1
@@ -54,8 +65,6 @@ class Player(Actor):
         self.expNextLevel = 5
         self.health = 10
         self.maxHealth = 10
-        self.strength = 1
-        self.defense = 0
         self.dexterity = 1
         self.accuracy = 0.95
         self.critChance = 0.01
@@ -102,11 +111,27 @@ class Player(Actor):
 
 ##Enemy definitions
 class Enemy(Actor):
+    def __init__(self):
+        Actor.__init__(self)
+        self.attackChance = 1
+        self.defendChance = 0
+        self.itemChance = 0
+        self.specialChance = 0
     def item(self):
-        print("Enemy item use not yet implemented")
+        text(self.name + " tried to use an item, but items are not yet implemented!")
     def special(self):
-        print("Enemy special attacks not yet implemented")
+        text(self.name + " tried to use a special attack, but special attacks are not yet implemented!")
         
+    def behavior(self,target):
+        action = random.random()
+        if action <= self.attackChance:
+            self.attack(target)
+        elif action <= (self.attackChance + self.defendChance) and action > self.attackChance:
+            self.defend()
+        elif action <= (self.attackChance + self.defendChance + self.itemChance) and action > (self.attackChance + self.defendChance):
+            self.item()
+        elif action <= (self.attackChance + self.defendChance + self.itemChance + self.specialChance) and action > (self.attackChance + self.defendChance + self.itemChance):
+            self.special()
     ''' Varible definitions:
 
         # Stats

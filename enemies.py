@@ -2,6 +2,7 @@ from actors import Enemy
 
 class Guard(Enemy):
     def __init__(self):
+        Enemy.__init__(self)
         self.name = "Guard"
         self.sesc = "An alien guard. Blueish-gray skin, four deep, black eyes.\
      Carries a spear."
