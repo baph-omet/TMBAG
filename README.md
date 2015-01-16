@@ -5,10 +5,10 @@ This game is a side-project that I'm working on to help myself learn Python and 
 
 ## How to Play
 ### Running the game
-This game is run exclusively in the Python console. If you don't have Python installed on your computer (you would know if you did), you can play this game from any online Python interpreter that supports Python 3 (here's one: http://www.tutorialspoint.com/execute_python3_online.php). Just copy the python files into the file list on the left side of the page and execute main.py. It's that simple! If you do have Python installed on your computer, just open the file main.py in IDLE and hit F5 to start the shell.
+This game is run exclusively in the Python console. If you don't have Python installed on your computer (you would know if you did), you can play this game from any online Python interpreter that supports Python 3 (here's one: http://www.tutorialspoint.com/execute_python3_online.php). Just copy the python files into the file list on the left side of the page and execute `main.py`. It's that simple! If you do have Python installed on your computer, just open the file `main.py` in IDLE and hit F5 to start the shell.
 
 ### Playing the game
-Throughout the game, you interact via supplying text input for various prompts. Prompts are case-insensitive. For most prompts, you can enter "MENU" to access the in-game menu to see stats, rename your character, and more.
+Throughout the game, you interact via supplying text input for various prompts. Prompts are case-insensitive. For most prompts, you can enter `"MENU"` to access the in-game menu to see stats, rename your character, and more.
 
 ## Planned Additions
 (?) - Possible additions
