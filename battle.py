@@ -15,6 +15,8 @@ def targetSelect(enemies):
             if target in range(len(enemies)):
                 target = enemies[target]
                 return target
+            elif target == "":
+                return enemies[0]
             else:
                 text("Incorrect target")
     else:
@@ -86,8 +88,7 @@ def battle(hero,enemies,escape=True):
         # Choose a battle command
         escaped = False
         while True:
-            battleChoice = options("ATTACK","SPECIAL","DEFEND","EXAMINE","MENU",\
-                                   "RUN")
+            battleChoice = options(hero,"ATTACK","SPECIAL","DEFEND","EXAMINE","MENU","RUN")
             if battleChoice == "ATTACK":
                 hero.attack(targetSelect(enemies))
                 break
@@ -136,20 +137,22 @@ def battle(hero,enemies,escape=True):
             
         # Checks for dead player
         if hero.health <= 0:
-            text(i.name + " was defeated!")
+            text(hero.name + " was defeated!")
             text("X X X GAME OVER X X X")
-            quit()
-    
-    # Shows player their loot
-    # All dropped items will show up here when items are implemented
-    print("Total EXP Gained:",battleExp)
-    print("Money Collected: $" + str(battleMoney))
-    print("Current Health:",str(hero.health) + "/" + str(hero.maxHealth))
-    print("=" * 10)
-    print("=" * 9)
-    print("=" * 8)
-    print("=" * 7)
-    print("=" * 6)
-    print("=" * 5)
-    print("=" * 4)
-    print("=" * 3)
+            battling = False
+    if hero.health <= 0:
+        quit()
+    else:
+        # Shows player their loot
+        # All dropped items will show up here when items are implemented
+        print("Total EXP Gained:",battleExp)
+        print("Money Collected: $" + str(battleMoney))
+        print("Current Health:",str(hero.health) + "/" + str(hero.maxHealth))
+        print("=" * 10)
+        print("=" * 9)
+        print("=" * 8)
+        print("=" * 7)
+        print("=" * 6)
+        print("=" * 5)
+        print("=" * 4)
+        print("=" * 3)

@@ -1,6 +1,6 @@
 import random
 from methods import *
-from battle import *
+from items import *
 
 # Actor definitions
 class Actor:
@@ -35,8 +35,7 @@ class Actor:
             if damage <= 0:
                 text(self.name + "'s attack failed to damage " + target.name + "!")
             else:
-                text(self.name + " attacked " + target.name + " for " + str(damage)\
-                 + " damage.")
+                text(self.name + " attacked " + target.name + " for " + str(damage) + " damage.")
                 target.health -= damage
         # attacks a target. target can be any actor (player or enemy)
 
@@ -68,6 +67,14 @@ class Player(Actor):
         self.dexterity = 1
         self.accuracy = 0.95
         self.critChance = 0.01
+        self.items = {x:0 for x in Consumable.__subclasses__()}
+        self.unequipped = {x:0 for x in Equipment.__subclasses__()}
+        self.equipment = [
+            "",
+            "",
+            "",
+            ""
+        ]
         
     def examine(self,target):
         text("You take a closer look at " + target.name)
@@ -76,8 +83,8 @@ class Player(Actor):
         print("| HP: " + str(target.health) + "/" + str(target.maxHealth))
         print("| Strength:",target.strength)
         print("| Defense:",target.defense)
-        print("| Accuracy:",str(target.accuracy * 100) + "%")
-        print("| Critical Chance:",str(target.critChance * 100) + "%")
+        print("| Accuracy:",str(int(target.accuracy * 100)) + "%")
+        print("| Critical Chance:",str(int(target.critChance * 100)) + "%")
         print("|",target.desc)
         print("=" * 15)
     
@@ -132,7 +139,7 @@ class Player(Actor):
         
         # Player picks to either increase strength or dexterity by one. Lets the player choose their development path a bit.
         text("Choose a level-up bonus!")
-        levelUpBonus = options("STRENGTH","DEXTERITY")
+        levelUpBonus = options(self,"STRENGTH","DEXTERITY")
         if levelUpBonus == "STRENGTH":
             self.strength += 1
             print("Strength + 1")
