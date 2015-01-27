@@ -1,6 +1,6 @@
-from methods import *
-from actors import *
-from enemies import *
+import methods
+# from actors import *
+# from enemies import *
 
 # Target Selector
 def targetSelect(enemies):
@@ -18,7 +18,7 @@ def targetSelect(enemies):
             elif target == "":
                 return enemies[0]
             else:
-                text("Incorrect target")
+                methods.text("Incorrect target")
     else:
         return enemies[0]
 
@@ -48,19 +48,22 @@ def battle(hero,enemies,escape=True):
     print("=" * 11)
     print("| BATTLE! |")
     print("=" * 11)
-    b(1)
+    methods.b(1)
     
     # Main battle loop
     while battling:
+        # Lowers the player's guard if they're guarding
+        hero.unDefend()
+        
         # Print player stats
         print("*" * 12)
-        print("|" + " " * int((10 - len(hero.name))/2) + hero.name + " " * \
-              int((10 - len(hero.name))/2) + "|")
+        print("|",hero.name)
         print("| HP: " + str(hero.health) + "/" + str(hero.maxHealth))
+        print("| SP: " + str(hero.specialPoints) + "/" + str(hero.maxSpecialPoints))
         print("*" * 12)
-        b(2)
+        methods.b(2)
         print("=" * 24)
-        b(2)
+        methods.b(2)
 
         # If there are multiple enemies, number them
         n = 1
@@ -70,30 +73,28 @@ def battle(hero,enemies,escape=True):
             n += 1
             
         # Print enemy stats
-        for i in enemies:
+        for en in enemies:
             if len(enemies) > 1:
-                enemyNumber = str(enemies.index(i) + 1)
+                enemyNumber = str(enemies.index(en) + 1)
             else:
                 enemyNumber = ""
             print("*" * 12)
-            print("| " + i.name + " " + enemyNumber)
-            print("| HP: " + str(i.health) + "/" + str(i.maxHealth))
+            print("| " + en.name + " " + enemyNumber)
+            print("| HP: " + str(en.health) + "/" + str(en.maxHealth))
+            print("| SP: " + str(hero.specialPoints) + "/" + str(hero.maxSpecialPoints))
             if i.guarding:
                 print("| Defending!")
             print("*" * 12)
 
-        # Lowers the player's guard if they're guarding
-        hero.unDefend()
-
         # Choose a battle command
         escaped = False
         while True:
-            battleChoice = options(hero,"ATTACK","SPECIAL","DEFEND","EXAMINE","MENU","RUN")
+            battleChoice = methods.options(hero,["ATTACK","SPECIAL","DEFEND","EXAMINE","MENU","RUN"])
             if battleChoice == "ATTACK":
                 hero.attack(targetSelect(enemies))
                 break
             elif battleChoice == "SPECIAL":
-                text("Special attacks are not yet implemented")
+                methods.text("Special attacks are not yet implemented")
             elif battleChoice == "DEFEND":
                 hero.defend()
                 break
@@ -111,9 +112,9 @@ def battle(hero,enemies,escape=True):
         # checks for dead enemies
         for i in enemies:
             if i.health <= 0:
-                text(i.name + " was defeated!")
+                methods.text(i.name + " was defeated!")
                 # EXP is gained in-battle a-la Pokemon, allowing a player to be healed if they level up mid-battle.
-                text("You gained " + str(i.expYield) + " Experience")
+                methods.text("You gained " + str(i.expYield) + " Experience")
                 hero.exp += i.expYield
                 battleExp += i.expYield
                 if hero.exp >= hero.expNextLevel:
@@ -126,7 +127,7 @@ def battle(hero,enemies,escape=True):
         if not enemies:
             print("!" * 11)
             print("! VICTORY !")
-            print("!" * 11)
+            methods.text("!" * 11)
             break
 
         # Each enemy lowers their guard if defending, then takes their turn
@@ -137,17 +138,17 @@ def battle(hero,enemies,escape=True):
             
         # Checks for dead player
         if hero.health <= 0:
-            text(hero.name + " was defeated!")
-            text("X X X GAME OVER X X X")
+            methods.text(hero.name + " was defeated!")
+            methods.text("X X X GAME OVER X X X")
             battling = False
     if hero.health <= 0:
         quit()
     else:
         # Shows player their loot
         # All dropped items will show up here when items are implemented
-        print("Total EXP Gained:",battleExp)
-        print("Money Collected: $" + str(battleMoney))
-        print("Current Health:",str(hero.health) + "/" + str(hero.maxHealth))
+        methods.text("Total EXP Gained: " + str(battleExp))
+        methods.text("Money Collected: $" + str(battleMoney))
+        methods.text("Current Health: " + str(hero.health) + "/" + str(hero.maxHealth))
         print("=" * 10)
         print("=" * 9)
         print("=" * 8)

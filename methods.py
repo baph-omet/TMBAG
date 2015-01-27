@@ -1,7 +1,6 @@
 import time
-from items import *
+import items
 # from actors import *
-from items import *
 
 #Custom Functions
 def w(i):
@@ -29,13 +28,13 @@ def ask(q,keepCase = False):
     return v
     #should ask a question, then return the response
 
-def options(player,*o,menu=True):
+def options(player,o,menu=True):
     while True:
         print("Options:")
         match = 0
         for s in o:
             print("  -",str(s).upper())
-        choice = ask("What will you do?")
+        choice = ask("Choose an option:")
         for s in o:
             if choice == str(s).upper():
                 match = 1
@@ -59,58 +58,86 @@ def options(player,*o,menu=True):
     # usage: "choice = options("CHOICE 1", "CHOICE 2", ... , menu=False)
     
 def showInventory(player):
-    print("=============")
-    print("  INVENTORY")
-    print("=============")
-    b(1)
-    print("===========")
-    print(" EQUIPMENT")
-    print("===========")
-    print("|")
-    if player.equipment[0] == "":
-        print("| Weapon: FISTS")
-    else:
-        print("| Weapon:",player.equipment[0].name)
-    if player.equipment[1] == "":
-        print("| Headgear: NONE")
-    else:
-        print("| Headgear:",player.equipment[1].name)
-    if player.equipment[2] == "":
-        print("| Armor: NONE")
-    else:
-        print("| Armor:",player.equipment[2].name)
-    if player.equipment[3] == "":
-        print("| Footgear: NONE")
-    else:
-        print("| Footgear:",player.equipment[3].name)
-    b(1)
-    print("=======")
-    print(" ITEMS")
-    print("=======")
-    b(1)
-    for k,v in player.items:
-        if v > 0:
-            print("|",k.name,"x" + str(v))
-    for k,v in player.unequipped:
-        if v > 0:
-            print("|",k.name,"x" + str(v))
-    while True:
-        print("Options:")
-        print("  - USE - Use an item or equip equipment")
-        print("  - UNEQUIP - Unequip equipment")
-        print("  - TOSS - Throw an item away")
-        print("  - EXIT - Close Inventory")
-        choice = input("Choose an option: ").upper()
-        if choice == "USE":
-            pass
-        elif choice == "UNEQUIP":
-            pass
-        elif choice == "TOSS":
-            pass
-        elif choice == "EXIT":
-            break
+    closeInv = False
+    while not closeInv:
+        print("=============")
+        print("  INVENTORY")
+        print("=============")
+        b(1)
+        print("===========")
+        print(" EQUIPMENT")
+        print("===========")
+        print("|")
+        debug = False
+        if player.equipment[0] == "":
+            print("| Weapon: FISTS")
         else:
-            text("Invalid input")
+            print("| Weapon:",player.equipment[0].name)
+        if player.equipment[1] == "":
+            print("| Headgear: NONE")
+        else:
+            print("| Headgear:",player.equipment[1].name)
+        if player.equipment[2] == "":
+            print("| Armor: NONE")
+        else:
+            print("| Armor:",player.equipment[2].name)
+        if player.equipment[3] == "":
+            print("| Footgear: NONE")
+        else:
+            print("| Footgear:",player.equipment[3].name)
+        b(1)
+        print("=======")
+        print(" ITEMS")
+        print("=======")
+        print("|")
+        if not player.items:
+            print("| No items")
+        else:
+            for k in player.items:
+                if player.items[k] > 0:
+                    print("|",k,"x" + str(player.items[k]))
+                    
+            for k in player.unequipped:
+                if player.unequipped[k] > 0:
+                    print("|",k,"x" + str(player.unequipped[k]))
+        b(1)
+        
+        while True:
+            print("Options:")
+            print("  - USE - Use an item or equip equipment")
+            print("  - UNEQUIP - Unequip equipment")
+            print("  - TOSS - Throw an item away")
+            if debug:
+                print("  - GIVE - Give the player an item")
+            print("  - EXIT - Close Inventory")
+            
+            choice = input("Choose an option: ").upper()
+            b(1)
+            if choice == "USE":
+                player.itemUse()
+                
+            elif choice == "UNEQUIP":
+                pass
+                
+            elif choice == "TOSS":
+                pass
+                
+            elif choice == "DEBUG":
+                debug = not debug
+                
+            elif choice == "GIVE" and debug:
+                itemChoice = []
+                for i in items.Consumable.__subclasses__():
+                    itemChoice.append(i.name)
+                for i in items.Equipment.__subclasses__():
+                    itemChoice.append(i.name)
+                player.giveItem(options(player,itemChoice))
+                
+            elif choice == "EXIT":
+                closeInv = True
+                break
+            else:
+                text("Invalid input")
 
 def showMenu(player):
     print("==========")

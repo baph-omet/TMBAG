@@ -1,6 +1,6 @@
 import random
-from methods import *
-from items import *
+import methods
+import items
 
 # Actor definitions
 class Actor:
@@ -11,6 +11,8 @@ class Actor:
         self.defense = 0
         self.health = 5
         self.maxHealth = 5
+        self.specialPoints = 3
+        self.maxSpecialPoints = 3
         self.expYield = 1
         self.items = []
         self.specials = []
@@ -25,17 +27,17 @@ class Actor:
 
     def attack(self,target):
         if random.random() > (self.accuracy + self.accuracyMod):
-            text(self.name + "'s attack missed!")
+            methods.text(self.name + "'s attack missed!")
         else:
             if random.random() <= (self.critChance + self.critMod):
-                text("Critical hit!")
+                methods.text("Critical hit!")
                 damage = (self.strength + self.strengthMod) * 3 - (target.defense + target.defenseMod)
             else:
                 damage = (self.strength + self.strengthMod) - (target.defense + target.defenseMod)
             if damage <= 0:
-                text(self.name + "'s attack failed to damage " + target.name + "!")
+                methods.text(self.name + "'s attack failed to damage " + target.name + "!")
             else:
-                text(self.name + " attacked " + target.name + " for " + str(damage) + " damage.")
+                methods.text(self.name + " attacked " + target.name + " for " + str(damage) + " damage.")
                 target.health -= damage
         # attacks a target. target can be any actor (player or enemy)
 
@@ -43,15 +45,37 @@ class Actor:
         if not self.guarding:
             self.guarding = True
             self.defenseMod += 1
-            text(self.name + " raised their guard!")
+            methods.text(self.name + " raised their guard!")
     def unDefend(self):
         if self.guarding:
             self.guarding = False
             self.defenseMod -= 1
-            text(self.name + " lowered their guard!")
-
-    def item(self, item, target):
-        pass
+            methods.text(self.name + " lowered their guard!")
+        
+    def itemEffect(self,itemChoice):
+        for i in items.Consumable.__subclasses__():
+            if itemChoice == i.name:
+                itemChoiceObj = i()
+        # else:
+            # methods.text("The item specified either doesn't exist, or is a piece of equipment.")
+            # return
+        methods.text("Used " + itemChoiceObj.name)
+        if itemChoiceObj.effect == "HEALTH":
+            self.health += itemChoiceObj.effectStrength
+            if self.health > self.maxHealth: 
+                self.health = self.maxHealth
+            methods.text(self.name + " recovered " + str(itemChoiceObj.effectStrength) + "HP!")
+        else:
+            methods.text("It had no effect!")
+            return
+           
+        self.items[itemChoice] -= 1
+        if self.items[itemChoice] <= 0:
+            self.items[itemChoice] = 0
+            if type(self) == Player:
+                methods.text("You used your last " + itemChoiceObj.name)
+            else:
+                methods.text(self.name + " used their last " + itemChoiceObj.name + "!")
     
 # Player definition
 class Player(Actor):
@@ -67,8 +91,8 @@ class Player(Actor):
         self.dexterity = 1
         self.accuracy = 0.95
         self.critChance = 0.01
-        self.items = {x:0 for x in Consumable.__subclasses__()}
-        self.unequipped = {x:0 for x in Equipment.__subclasses__()}
+        self.items = {}
+        self.unequipped = {}
         self.equipment = [
             "",
             "",
@@ -76,8 +100,40 @@ class Player(Actor):
             ""
         ]
         
+    def itemUse(self):
+        itemChoices = []
+        for k in self.items:
+            if self.items[k] > 0:
+                itemChoices.append(k)
+        for k in self.unequipped:
+            if self.unequipped[k] > 0:
+                itemChoices.append(k)
+        if itemChoices:
+            target = methods.options(self,itemChoices)
+            self.itemEffect(target)
+        else:
+            methods.text("You don't have any items!")
+        
+    def giveItem(self,itemName):
+        for i in items.Consumable.__subclasses__():
+            if itemName == i.name:
+                if itemName in self.items:
+                    self.items[itemName] += 1
+                else:
+                    self.items[itemName] = 1
+                methods.text("Gave the player a " + itemName)
+                return
+        for i in items.Equipment.__subclasses__():
+            if itemName == i.name:
+                if itemName in self.items:
+                    self.items[itemName] += 1
+                else:
+                    self.items[itemName] = 1
+                methods.text("Gave the player a " + itemName)
+                return
+                    
     def examine(self,target):
-        text("You take a closer look at " + target.name)
+        methods.text("You take a closer look at " + target.name)
         print("=" * 15)
         print("|",target.name)
         print("| HP: " + str(target.health) + "/" + str(target.maxHealth))
@@ -86,7 +142,7 @@ class Player(Actor):
         print("| Accuracy:",str(int(target.accuracy * 100)) + "%")
         print("| Critical Chance:",str(int(target.critChance * 100)) + "%")
         print("|",target.desc)
-        print("=" * 15)
+        methods.text("=" * 15)
     
     def runAway(self, enemies, escape):
         if escape:
@@ -98,13 +154,13 @@ class Player(Actor):
             avgSkill = avgSkill / n
             runChance = ((self.accuracy + self.critChance) / avgSkill) * (self.maxHealth / self.health)
             if random.random() <= runChance:
-                text("You successfully escaped from the battle!")
+                methods.text("You successfully escaped from the battle!")
                 return True
             else:
-                text("You couldn't escape!")
+                methods.text("You couldn't escape!")
                 return False
         else:
-            text("You cannot escape from this battle!")
+            methods.text("You cannot escape from this battle!")
             return False
         
     def levelUp(self):
@@ -113,8 +169,8 @@ class Player(Actor):
         
         # Level is incremented
         self.level += 1
-        text("You leveled up!")
-        text("You reached Level",str(self.level) + "!")
+        methods.text("You leveled up!")
+        methods.text("You reached Level",str(self.level) + "!")
         print("=" * 15)
         
         # Next level's exp requirement is twice that of the previous level
@@ -138,8 +194,8 @@ class Player(Actor):
         print("=" * 15)
         
         # Player picks to either increase strength or dexterity by one. Lets the player choose their development path a bit.
-        text("Choose a level-up bonus!")
-        levelUpBonus = options(self,"STRENGTH","DEXTERITY")
+        methods.text("Choose a level-up bonus!")
+        levelUpBonus = methods.options(self,["STRENGTH","DEXTERITY"])
         if levelUpBonus == "STRENGTH":
             self.strength += 1
             print("Strength + 1")
@@ -149,11 +205,9 @@ class Player(Actor):
     
     # Renames the player     
     def rename(self):
-        text("It's at this point in your adventure that you decide to forge a new\
-     itentity for yourself. You're the boss. Who's to tell you what your name is?")
+        methods.text("It's at this point in your adventure that you decide to forge a new itentity for yourself. You're the boss. Who's to tell you what your name is?")
         self.name = input("What shall your new name be? ")
-        text("You are now known as " + self.name + ", a name certainly 100, nay, 1000 times\
-     the superior of your old monicker.")
+        methods.text("You are now known as " + self.name + ", a name certainly 100, nay, 1000 times the superior of your old moniker.")
 
 # Enemy definitions
 class Enemy(Actor):
@@ -164,10 +218,23 @@ class Enemy(Actor):
         self.itemChance = 0
         self.specialChance = 0
     def item(self):
-        text(self.name + " tried to use an item, but items are not yet implemented!")
+        methods.text(self.name + " tried to use an item, but items are not yet implemented!")
     def special(self):
-        text(self.name + " tried to use a special attack, but special attacks are not yet implemented!")
+        methods.text(self.name + " tried to use a special attack, but special attacks are not yet implemented!")
         
+    def itemUse(self):
+        if not self.items:
+            self.defend()
+        else:
+            itemChoice = random.choice(self.items)
+            self.itemEffect(itemChoice)
+            
+    def specialUse(self):
+        if self.specialPoints == 0 or not self.specials:
+            self.defend()
+        else:
+            pass
+            # randomly pick from their pool of specials, then use it
     def behavior(self,target):
         action = random.random()
         if action <= self.attackChance:
@@ -175,9 +242,10 @@ class Enemy(Actor):
         elif action <= (self.attackChance + self.defendChance) and action > self.attackChance:
             self.defend()
         elif action <= (self.attackChance + self.defendChance + self.itemChance) and action > (self.attackChance + self.defendChance):
-            self.item()
+            self.itemUse()
         elif action <= (self.attackChance + self.defendChance + self.itemChance + self.specialChance) and action > (self.attackChance + self.defendChance + self.itemChance):
-            self.special()
+            self.specialUse()
+
     ''' Varible definitions:
 
         # Stats

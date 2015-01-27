@@ -1,4 +1,4 @@
-from methods import *
+import methods
 
 # Basic classes
 
@@ -12,23 +12,6 @@ class Item():
 class Consumable(Item):
     def __init__(self):
         Item.__init__(self)
-    
-    def itemUse(self,target):
-        text("Used " + self.name)
-        if self.effect == "HEALTH":
-            target.health += self.effectStrength
-            if target.health > target.maxHealth: 
-                target.health = target.maxHealth
-            text(target.name + " recovered " + self.effectStrength + "HP!")
-            target.inventory[self] -= 1
-            if target.inventory[self] >= 0:
-                target.inventory[self] = 0
-                if type(target) == Player:
-                    text("You used your last " + self.name)
-                else:
-                    text(target.name + " used their last " + self.name + "!")
-        else:
-            text("This item cannot be used!")
             
 class KeyItem(Item):
     def __init__(self):
@@ -60,6 +43,7 @@ class Potion(Consumable):
         self.buyPrice = 5
         self.sellPrice = 2
         
+    name = "POTION"
 ## Weapons
         
 ## Headgear
@@ -70,6 +54,7 @@ class LeatherHelm(Equipment):
         self.desc = "A soft leather helmet. Doesn't provide much protection on its own.\nTry equipping with other leather armor."
         self.equipSlot = 1
         self.defenseBonus = 0.5
+    name = "LEATHER HELMET"
 
 ## Armor
 class LeatherChestplate(Equipment):
@@ -79,6 +64,7 @@ class LeatherChestplate(Equipment):
         self.desc = "A padded leather chestplate. Smells weird, but better than a knife in the gut."
         self.equipSlot = 2
         self.defenseBonus = 1
+    name = "LEATHER CHESTPLATE"
         
 ## Footgear
 class LeatherBoots(Equipment):
@@ -88,3 +74,10 @@ class LeatherBoots(Equipment):
         self.desc = "Rugged leather boots with long laces. They'll protect you if your toes are stepped on,\nbut that's about it. Try equipping with other leather armor."
         self.equipSlot = 3
         self.defenseBonus = 0.5
+    name = "LEATHER BOOTS"
+    
+def allItems():
+    itemList = []
+    for i in Consumable.__subclasses__():
+        itemList.append(i.name)
+    return itemList
