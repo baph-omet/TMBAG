@@ -1,6 +1,4 @@
 import methods
-# from actors import *
-# from enemies import *
 
 # Target Selector
 def targetSelect(enemies):
@@ -82,7 +80,7 @@ def battle(hero,enemies,escape=True):
             print("| " + en.name + " " + enemyNumber)
             print("| HP: " + str(en.health) + "/" + str(en.maxHealth))
             print("| SP: " + str(hero.specialPoints) + "/" + str(hero.maxSpecialPoints))
-            if i.guarding:
+            if en.guarding:
                 print("| Defending!")
             print("*" * 12)
 
@@ -148,6 +146,7 @@ def battle(hero,enemies,escape=True):
         # All dropped items will show up here when items are implemented
         methods.text("Total EXP Gained: " + str(battleExp))
         methods.text("Money Collected: $" + str(battleMoney))
+        hero.money += battleMoney
         methods.text("Current Health: " + str(hero.health) + "/" + str(hero.maxHealth))
         print("=" * 10)
         print("=" * 9)
@@ -157,3 +156,4 @@ def battle(hero,enemies,escape=True):
         print("=" * 5)
         print("=" * 4)
         print("=" * 3)
+        print("")

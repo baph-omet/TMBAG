@@ -1,33 +1,40 @@
 import time
+
 import items
-# from actors import *
 
 #Custom Functions
+# shortcut for sleep
 def w(i):
     time.sleep(i)
-    # shortcut for sleep
     
+# prints i number of blank lines
 def b(i):
     for f in range(i):
         print()
-    # prints i number of blank lines
     
+# prints text, prints a blank line, waits half a sec
+# The input makes it so that players have to hit enter to advance text
+# It's crude, but it works.
 def text(t):
     print(t)
     b(1)
     w(1)
     input("")
-    # prints text, prints a blank line, waits half a sec
-    # The input makes it so that players have to hit enter to advance text
-    # It's crude, but it works.
 
+#should ask a question, then return the response
 def ask(q,keepCase = False):
     v = input(q + " ")
     if keepCase == False:
         v = v.upper()
     return v
-    #should ask a question, then return the response
 
+# displays a list of preformatted options. o is a list of strings, menu
+#     is boolean, and determines whether the player can access the menu from
+#     that set of options. menu must be specified explicitly.
+# if the input is MENU, shows the menu
+# if the input matches an option
+# if the input does not match an option, forces user to pick again
+# usage: "choice = options("CHOICE 1", "CHOICE 2", ... , menu=False)
 def options(player,o,menu=True):
     while True:
         print("Options:")
@@ -48,14 +55,6 @@ def options(player,o,menu=True):
             return choice
         else:
             text("Invalid option")
-            
-    # displays a list of preformatted options. o is a list of strings, menu
-    #     is boolean, and determines whether the player can access the menu from
-    #     that set of options. menu must be specified explicitly.
-    # if the input is MENU, shows the menu
-    # if the input matches an option
-    # if the input does not match an option, forces user to pick again
-    # usage: "choice = options("CHOICE 1", "CHOICE 2", ... , menu=False)
     
 def showInventory(player):
     closeInv = False
@@ -96,10 +95,6 @@ def showInventory(player):
             for k in player.items:
                 if player.items[k] > 0:
                     print("|",k,"x" + str(player.items[k]))
-                    
-            for k in player.unequipped:
-                if player.unequipped[k] > 0:
-                    print("|",k,"x" + str(player.unequipped[k]))
         b(1)
         
         while True:
@@ -114,18 +109,43 @@ def showInventory(player):
             choice = input("Choose an option: ").upper()
             b(1)
             if choice == "USE":
-                player.itemUse()
+                itemChoice = player.itemChoose()
+                if itemChoice:
+                    player.itemEffect(itemChoice)
                 
             elif choice == "UNEQUIP":
-                pass
+                done = False
+                while not done:
+                    foundItem = False
+                    for e in player.equipment:
+                        if e:
+                            print("  - " + e.name + " - " + e.desc)
+                            foundItem = True
+                    if not foundItem:
+                        text("You have nothing equipped.")
+                        break
+                    else:
+                        unequipChoice = input("Choose an item to unequip: ")
+                        for e in player.equipment:
+                            if e and unequipChoice.upper() == e.name:
+                                player.unequip(e)
+                                done = True
+                                break
+                        else:
+                            text("Invalid input")
+                        if done:
+                            break
+                    
                 
             elif choice == "TOSS":
-                pass
+                itemChoice = player.itemChoose()
+                if itemChoice:
+                    player.toss(itemChoice)
                 
             elif choice == "DEBUG":
                 debug = not debug
                 
-            elif choice == "GIVE" and debug:
+            elif choice == "GIVE":
                 itemChoice = []
                 for i in items.Consumable.__subclasses__():
                     itemChoice.append(i.name)
@@ -149,11 +169,9 @@ def showMenu(player):
     print("Level:", player.level)
     print("Experience:", str(player.exp) + "/" + str(player.expNextLevel))
     print("Health:", str(player.health) + "/" + str(player.maxHealth))
-    print("Strength:", player.strength, "- The damage you deal with physical weapons\
-(fists, swords, etc.)")
+    print("Strength:", player.strength, "- The damage you deal with physical weapons (fists, swords, etc.)")
     print("Defense:", player.defense, "- The amount of damage you resist.")
-    print("Dexterity:", player.dexterity, "- The damage you deal with ranged weapons\
-(guns, bows, etc.)")
+    print("Dexterity:", player.dexterity, "- The damage you deal with ranged weapons (guns, bows, etc.)")
     print("Crit Chance:", str(int(player.critChance * 100)) + "%", "- Chance that\
  your basic attacks will land a critical hit (x3 Damage)")
     b(1)
