@@ -7,22 +7,23 @@ import specials
 # Actor definitions
 class Actor:
     def __init__(self):
-        self.name = "Dummy"
-        self.desc = ""
-        self.strength = 1
-        self.defense = 0
         self.health = 5
-        self.maxHealth = 5
-        self.specialPoints = 3
-        self.maxSpecialPoints = 3
-        self.specials = []
-        self.accuracy = 1
-        self.CritChance = 0
         self.guarding = False
         self.strengthMod = 0
         self.defenseMod = 0
         self.accuracyMod = 0
         self.critMod = 0
+        self.specialPoints = 3
+        self.specials = []
+        self.maxSpecialPoints = 3
+        
+    name = "Dummy"
+    desc = ""
+    strength = 1
+    defense = 0
+    maxHealth = 5
+    accuracy = 1
+    CritChance = 0
 
     # Attacks a target, target can be any actor (player or enemy)
     def attack(self,target):
@@ -65,64 +66,145 @@ class Actor:
             else:
                 text(self.name + " attacked " + target.name + " for " + str(damage) + " damage.")
                 target.health -= damage
-
+    
+    # Uses a special attack. Like a standard attack, but uses a damage modifier based on the attack.
+    def specialAttack(self,specialChoice,target):
+        # Announces attack
+        if type(self) == Player:
+            # If it's the player, it picks a random phrase to say
+            shoutChoice = random.random()
+            if shoutChoice < 0.25:
+                text(self.name + ": Take this! " + specialChoice.name + "!")
+            elif shoutChoice < 0.5:
+                text(self.name + ": Here we go! " + specialChoice.name + "!")
+            elif shoutChoice < 0.75:
+                text(self.name + ": Die! " + specialChoice.name + "!")
+            else:
+                text(self.name + ": " + specialChoice.name + "!")
+        
+        # If the executor isn't a player, they just say a generic phrase
+        else:    
+            text(self.name + ": " + specialChoice.name + "!")
+            
+        # If it's the player, and they try to use a ranged special without a ranged item equipped
+        if type(self) == Player and specialChoice.statUsed == "DEXTERITY" and self.equipment[0].attackType != 1:
+            
+            # The attack fails
+            text("...but it failed. " + self.name + " forgot that ranged specials aren't possible with a ranged weapon.")
+            return
+            
+        # If the player DOES have a ranged weapon equipped
+        elif type(self) == Player and specialChoice.statUsed == "DEXTERITY":
+            damage = damage = int((self.dexterity + self.dexterityMod) * specialChoice.damageModifier) - int(target.defense + target.defenseMod)
+        
+        # Else, if they are an enemy or are using a melee special 
+        else:
+            damage = damage = int((self.strength + self.strengthMod) * specialChoice.damageModifier) - int(target.defense + target.defenseMod)
+            
+        # Roll for a crit
+        if random.random() <= (self.critChance + self.critMod):
+            text("Critical hit!")
+            damage *= 3
+            
+        # If the target's defense is too high
+        if damage <= 0:
+            text(self.name + "'s attack failed to damage " + target.name + "!")
+        
+        # Finally, deal damage to the target
+        else:
+            text(self.name + " attacked " + target.name + " for " + str(damage) + " damage.")
+            target.health -= damage
+            
     # Enables the user's guard, which raises defense by 1 until next turn
     def defend(self):
         if not self.guarding:
             self.guarding = True
-            self.defenseMod += 1
+            if self.defense > 0:
+                self.defenseMod += self.defense
+            else:
+                self.defenseMod += 1
             text(self.name + " raised their guard!")
     
     # Disables the user's guard, removing defense buff
     def unDefend(self):
         if self.guarding:
             self.guarding = False
-            self.defenseMod -= 1
+            if self.defense > 0:
+                self.defenseMod -= self.defense
+            else:
+                self.defenseMod -= 1
             text(self.name + " lowered their guard!")
         
     # Activates the effect of an item (usable by all actors)
     def itemEffect(self,itemChoice):
         # Checks if the selected item is a consumable
         for i in items.Consumable.__subclasses__():
-            if itemChoice == i.name:
-                itemChoiceObj = i()
-                text("Used " + itemChoiceObj.name)
-                if itemChoiceObj.effect == "HEALTH":
-                    self.health += itemChoiceObj.effectStrength
+            if itemChoice.name == i.name:
+                text("Used " + itemChoice.name)
+                if itemChoice.effect == "HEALTH":
+                    self.health += itemChoice.effectStrength
                     if self.health > self.maxHealth: 
                         self.health = self.maxHealth
-                    text(self.name + " recovered " + str(itemChoiceObj.effectStrength) + "HP!")
+                    text(self.name + " recovered " + str(itemChoice.effectStrength) + "HP!")
                 else:
                     text("It had no effect!")
                     return
                    
-                self.items[itemChoice] -= 1
-                if self.items[itemChoice] <= 0:
-                    self.items[itemChoice] = 0
+                self.items[itemChoice.name] -= 1
+                if self.items[itemChoice.name] <= 0:
+                    self.items[itemChoice.name] = 0
                     if type(self) == Player:
-                        text("You used your last " + itemChoiceObj.name)
+                        text("You used your last " + itemChoice.name)
                     else:
-                        text(self.name + " used their last " + itemChoiceObj.name + "!")
+                        text(self.name + " used their last " + itemChoice.name + "!")
                 return
         
         # If the selected item is equipment, equip it
         else:
             for i in items.Equipment.__subclasses__():
-                if itemChoice == i.name:
-                    itemChoiceObj = i()
+                if itemChoice.name == i.name:
                     break
             else:
-                text(self.name + " tried to use a nonexistent item.")
+                text(self.name + " tried to use a nonexistent item, which obviously did nothing.")
+                return
                 
             # Make sure the executor is a player
             if self is Enemy:
-                print("Enemies can't equip things")
+                print("Enemies can't equip things. Take the equipment out of their inventory.")
                 return
             else:
                 # Equip the selected item
-                self.equip(itemChoiceObj)
+                self.equip(itemChoice)
                 
-                
+    # Chooses a special attack
+    def chooseSpecial(self):
+        # For players...
+        if type(self) == Player and not self.specials:
+            pass
+        if type(self) == Player:
+            # Basically just get a list of the names of all the player's specials, pass them to options(), then get the special attack that corresponds to the choice
+            sChoices = []
+            for s in self.specials:
+                sChoices.append(s.name)
+            specialChoiceStr = options(self,sChoices)
+            for s in self.specials:
+                if specialChoiceStr == s.name:
+                    specialChoice = s
+                    
+        # For enemies...
+        else:
+            # If the enemy has no special points or has no specials to use, defend instead
+            if self.specialPoints == 0 or not self.specials:
+                self.defend()
+                return
+
+            # Else randomly pick from their pool of specials, then use it
+            else:
+                specialChoice = random.choice(self.specials)
+        
+        # Return whatever was chosen
+        return specialChoice
+            
 # Player definition
 class Player(Actor):
     def __init__(self,playerName):
@@ -150,6 +232,7 @@ class Player(Actor):
     def itemChoose(self):
         # Initialize empty list
         itemChoices = []
+        itemChoiceObj = None
         
         # Loop over keys in the user's inventory
         for k in self.items:
@@ -185,7 +268,7 @@ class Player(Actor):
                     # Quit the function
                     return
             # If an item was verified, return it (as an object)
-            return target
+            return itemChoiceObj
         # If the inventory IS empty, print the following message, then exit
         else:
             text("You don't have any items!")
@@ -263,12 +346,19 @@ class Player(Actor):
         # Double-check to make sure the item is actually in the player's inventory
         for e in self.items:
             if tossItem.name == e:
-                # Chuck that shit
-                self.items[e] -= 1
-                text(self.name + " threw away 1 " + tossItem.name)
                 break
+            
         else:
             text("That item couldn't be found. Check the source code.")
+            return
+        for e in KeyItem.__subclasses__():
+            if tossItem.name == e:
+                print(tossItem.name,"is a key item. You'd be stupid to throw this away.")
+                return
+        else:
+            # Chuck that shit
+            self.items[tossItem] -= 1
+            text(self.name + " threw away 1 " + tossItem.name)
         
     # Examine an enemy during battle. target is passed by the battle engine, and is an OBJECT
     def examine(self,target):
@@ -297,7 +387,7 @@ class Player(Actor):
                 avgSkill += (i.accuracy + i.critChance)
                 
             # Averages the skill stat
-            avgSkill = avgSkill / enemies.length()
+            avgSkill = avgSkill / len(enemies)
             
             # The chance that the player will escape is the ratio of their skill to the enemy skill multiplied by the ratio of their max health to their current health. Meaning the more "skilled" the enemies, the harder it is to escape, while the more injured the player is, the easier it is to escape.
             runChance = ((self.accuracy + self.critChance) / avgSkill) * (self.maxHealth / self.health)
@@ -323,33 +413,43 @@ class Player(Actor):
         self.exp = self.exp - self.expNextLevel
         
         # Level is incremented
+        # Initial: 1
         self.level += 1
         text("You leveled up!")
         text("You reached Level " + str(self.level) + "!")
         print("=" * 15)
         
         # Next level's exp requirement is twice that of the previous level
+        # Initial: 5
+        # expNextLevel = 5 * 2 ** (level - 1)
         self.expNextLevel *= 2
         
         # Crit chance is increased by a percetage equal to the new level
+        # Initial: 0.01 (1%)
+        # critChance = 0.01 + (math.sum(range(level)) - 1) * 0.01
         self.critChance += self.level * 0.01
         print("Crit Chance + " + str(self.level) + "%")
         
         # Max health is increased by an amount equal to the new level
+        # Initial: 10
+        # maxHealth = 10 + math.sum(range(2,level)) * 0.01
         self.maxHealth += self.level
         print("Max Health +", self.level)
         
         # Increase SP by 1, then refill SP
+        # Initial: 3
+        # maxSpecialPoints = 3 + level - 1
         self.maxSpecialPoints += 1
         self.specialPoints = self.maxSpecialPoints
         print("SP + 1")
         
         # Defense is increased by 1
+        # Initial: 0
+        # defense = level - 1
         self.defense += 1
         print("Defense + 1")
         
         # Health is refilled (I love it when games do this)
-        # In the future when I finally implement specials and SP, possibly refill SP
         self.health = self.maxHealth
         print("=" * 15)
         
@@ -366,9 +466,9 @@ class Player(Actor):
         # At lv2, the player either learns Heavy Strike special or Power Shot special, depending on their stats
         if self.level == 2:
             if self.strength > self.dexterity:
-                learnSpecial(specials.HeavyStrike)
+                self.learnSpecial(specials.HeavyStrike)
             elif self.strength < self.dexterity:
-                learnSpecial(specials.PowerShot)
+                self.learnSpecial(specials.PowerShot)
     
     # Adds a special move to the player's repertoire
     def learnSpecial(self,newSpecial):
@@ -380,6 +480,7 @@ class Player(Actor):
         
         # If the move is not already known
         self.specials.append(newSpecial)
+        text(self.name + " learned the special attack " + newSpecial.name)
     
     # Renames the player     
     def rename(self):
@@ -387,16 +488,19 @@ class Player(Actor):
         self.name = input("What shall your new name be? ")
         text("You are now known as " + self.name + ", a name certainly 100, nay, 1000 times the superior of your old moniker.")
 
+        
+    
 # Enemy definitions
 class Enemy(Actor):
     def __init__(self):
         Actor.__init__(self)
-        self.attackChance = 1
-        self.defendChance = 0
-        self.itemChance = 0
-        self.specialChance = 0
-        self.expYield = 1
-        self.moneyYield = 1
+    
+    attackChance = 1
+    defendChance = 0
+    itemChance = 0
+    specialChance = 0
+    expYield = 1
+    moneyYield = 1
         
     # Enemy item use behavior
     def itemUse(self):
@@ -409,16 +513,6 @@ class Enemy(Actor):
             itemChoice = random.choice(self.items)
             self.itemEffect(itemChoice)
             
-    # Enemy special attack behavior
-    def specialUse(self):
-        # If the enemy has no special points or has no specials to use, defend instead
-        if self.specialPoints == 0 or not self.specials:
-            self.defend()
-
-        # Else randomly pick from their pool of specials, then use it
-        else:
-            specialChoice = random.choice(self.specials)
-            # INSERT SPECIAL ATTACK USAGE HERE
     
     # How enemies choose what to do (spoiler: it's random)
     def behavior(self,target):
@@ -433,7 +527,7 @@ class Enemy(Actor):
         elif action <= (self.attackChance + self.defendChance + self.itemChance) and action > (self.attackChance + self.defendChance):
             self.itemUse()
         elif action <= (self.attackChance + self.defendChance + self.itemChance + self.specialChance) and action > (self.attackChance + self.defendChance + self.itemChance):
-            self.specialUse()
+            self.specialAttack(self.chooseSpecial, target)
 
     ''' Varible definitions:
 

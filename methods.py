@@ -18,15 +18,17 @@ def b(i):
 def text(t):
     print(t)
     b(1)
-    w(1)
+    # w(1)
     input("")
 
 #should ask a question, then return the response
 def ask(q,keepCase = False):
-    v = input(q + " ")
-    if keepCase == False:
-        v = v.upper()
-    return v
+    while True:
+        v = input(q + " ")
+        if v:
+            if keepCase == False:
+                v = v.upper()
+            return v
 
 # displays a list of preformatted options. o is a list of strings, menu
 #     is boolean, and determines whether the player can access the menu from
@@ -34,7 +36,7 @@ def ask(q,keepCase = False):
 # if the input is MENU, shows the menu
 # if the input matches an option
 # if the input does not match an option, forces user to pick again
-# usage: "choice = options("CHOICE 1", "CHOICE 2", ... , menu=False)
+# usage: "choice = options(you,["CHOICE 1", "CHOICE 2", ... ], menu=False)
 def options(player,o,menu=True):
     while True:
         print("Options:")
@@ -94,7 +96,16 @@ def showInventory(player):
         else:
             for k in player.items:
                 if player.items[k] > 0:
-                    print("|",k,"x" + str(player.items[k]))
+                    for i in items.Consumable.__subclasses__():
+                        if k == i.name:
+                            itemDesc = i.desc
+                            break
+                    else:
+                        for i in items.Equipment.__subclasses__():
+                            if k == i.name:
+                                itemDesc = i.desc
+                                break
+                    print("| " + k + " x" + str(player.items[k]) + " - " + itemDesc)
         b(1)
         
         while True:
@@ -169,6 +180,7 @@ def showMenu(player):
     print("Level:", player.level)
     print("Experience:", str(player.exp) + "/" + str(player.expNextLevel))
     print("Health:", str(player.health) + "/" + str(player.maxHealth))
+    print("Special Points:",str(player.specialPoints) + "/" + str(player.maxSpecialPoints))
     print("Strength:", player.strength, "- The damage you deal with physical weapons (fists, swords, etc.)")
     print("Defense:", player.defense, "- The amount of damage you resist.")
     print("Dexterity:", player.dexterity, "- The damage you deal with ranged weapons (guns, bows, etc.)")
@@ -179,6 +191,7 @@ def showMenu(player):
         print("Options:")
         print("  - INV - Open Inventory")
         print("  - RENAME - Pick a new name")
+        print("  - SPECIALS - Check special moves")
         print("  - EXIT - Close Menu")
         print("  - QUIT - Quit the game")
         choice = input("Choose an option: ").upper()
@@ -188,12 +201,34 @@ def showMenu(player):
         elif choice == "RENAME":
             player.rename()
             #run rename function
+        elif choice == "SPECIALS":
+            showSpecials(player)
+            # show player's specials
         elif choice == "EXIT":
-            #choose = False
             break
         elif choice == "QUIT":
-            if input("Type Y if you're sure you want to quit.\n(Progress will not be saved!): ").upper() == "Y":
+            if input("Type Y if you're sure you want to quit.\n(Progress WILL NOT be saved!): ").upper() == "Y":
                 print("See you later!")
                 quit()
         else:
             text("Invalid menu input")
+            
+def showSpecials(player):
+    b(3)
+    print("=========")
+    print(" SPECIAL ")
+    print("  MOVES  ")
+    print("=========")
+    b(1)
+    print("===")
+    print("|")
+    if player.specials:
+        for s in player.specials:
+            print("| - (" + str(s.specialPointCost) + ") " + str(s.name) + " - " + s.desc)
+    else:
+        print("| You haven't learned any specials!")
+    print("|")
+    print("===")
+    b(3)
+    input("Press ENTER to return to MENU")
+    b(3)

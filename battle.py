@@ -9,14 +9,17 @@ def targetSelect(enemies):
             for i in enemies:
                 print("  ",str(n) + ":",i.name,n)
                 n += 1
-            target = eval(input("(Pick a number) ")) - 1
-            if target in range(len(enemies)):
-                target = enemies[target]
-                return target
-            elif target == "":
-                return enemies[0]
-            else:
-                methods.text("Incorrect target")
+            try:
+                target = eval(input("(Pick a number) ")) - 1
+                if target in range(len(enemies)):
+                    target = enemies[target]
+                    return target
+                elif target == "":
+                    return enemies[0]
+                else:
+                    methods.text("Incorrect target")
+            except NameError:
+                methods.text("Incorrect target, pick a number")
     else:
         return enemies[0]
 
@@ -92,7 +95,7 @@ def battle(hero,enemies,escape=True):
                 hero.attack(targetSelect(enemies))
                 break
             elif battleChoice == "SPECIAL":
-                methods.text("Special attacks are not yet implemented")
+                hero.specialAttack(hero.chooseSpecial(),targetSelect(enemies))
             elif battleChoice == "DEFEND":
                 hero.defend()
                 break
