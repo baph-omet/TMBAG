@@ -20,9 +20,9 @@ Throughout the game, you interact via supplying text input for various prompts. 
 
 ## Planned Additions
 (?) - Possible additions
-- Special moves
+~~- Special moves~~
 - Shops
-- Inventory system
+~~- Inventory system~~
 - Random encounters (?)
 - Some sort of visual component (?)
 - .exe version for non-python users
