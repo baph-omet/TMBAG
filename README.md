@@ -7,11 +7,12 @@ This game is a side-project that I'm working on to help myself learn Python and 
 ### Running the game
 This game is run exclusively in the Python console. Make sure you're using at least Python 3.
 
-#### If you don't have Python installed
+#### If you DON'T have Python installed
 If you don't have Python installed on your computer (you would know if you did), you can play this game from any online Python interpreter that supports Python 3 (here's one: http://www.tutorialspoint.com/execute_python3_online.php). Just copy all the python files (`*.py`) into the file list on the left side of the page and execute `main.py`. It's that simple!
+
 Alternatively, you can download and install Python 3 from http://python.org and then skip to the next section.
 
-#### If you have Python installed
+#### If you DO have Python installed
 If you do have Python installed on your computer, download all the files and extract them into the same folder. Then there are a few ways to start the game:
 ##### Easy Way
 Just double-click on the file `main.py`. This will open a new command prompt window containing the game. You may want to resize the window so you can see past lines of text.
