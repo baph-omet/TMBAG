@@ -1,5 +1,4 @@
 #Imports
-import time
 import random
 
 from methods import text, b, w, options
@@ -40,15 +39,17 @@ def ChapterOne(player):
     text("It's at this time that you hear a pounding on the door. Before you have\ntime to react, the door bursts open. A strange-looking creature strides in.\nIt doesn't look friendly. It's making some weird noise at you and brandishing\na nasty-looking spear. Looks light it's trying to pick a fight.")
 
     guardA = enemies.Guard()
-    battle(player,[guardA])
+    battle(player,[guardA],escape=False)
     
+    text("Guard dropped a Potion!")
+    player.giveItem("POTION")
     text("Well that sure was rude.")
     text("That guard that attacked you looked like some kind of alien.\nPerhaps you were abducted? At any rate, it looks\n like they left the door open. You decide not to hang around.")
     text("You find yourself in a long hallway. As you approach the end of\nthe hallway, you notice that the path branches off to the\nleft and right. Which path will you take?")
     
     choice = options(player,["LEFT","RIGHT"])
     if choice == "LEFT":
-        text("You venture down the hallway to the left. The path makes multiple turns before ending in a door similar to the one in which you awoke.")
+        text("You venture down the hallway to the left. The path makes multiple\nturns before ending in a door similar to the one in which you awoke.")
         text("The door slides open softly at your touch, revealing a small, dark room beyond.")
         text("You walk in cautiously, hoping not to get ambushed. It looks like this room is...\na broom closet. There's a BROOM and a BUCKET sitting nonchalant in the middle of the floor.")
         
@@ -84,13 +85,13 @@ def ChapterOne(player):
         choice = options(player,["NORTH","EAST","SOUTH"])
         if choice == "NORTH":
             # some room to the north
-            text("You walk though the hallway to the north and encounter a small room. There's a door panel in the wall that doesn't seem to open.")
+            text("You walk though the hallway to the north and encounter a small room.\nThere's a door panel in the wall that doesn't seem to open.")
             battleChance = random.random()
-            if battleChance < 0.1:
+            if battleChance < 0.2:
                 text("As you're waiting, the door slides open and a giant alien comes out!")
                 guardA = enemies.GuardCaptain()
                 battle(player,[guardA])
-            elif battleChance < 0.5:
+            elif battleChance < 0.6:
                 text("As you're waiting, the door slides open and some aliens come out!")
                 guardA = enemies.Guard()
                 guardB = enemies.Guard()
@@ -120,7 +121,6 @@ def main():
     print("+-+-+-+-+-+-+-+-+-+-+-+")
     b(1)
     w(0.5)
-    global debug
     debug = False
     while True:
         print("Options:")
@@ -172,9 +172,10 @@ def main():
             debug = not debug
             text("Debug enabled!")
         elif choice == "TEST BATTLE":
-            you.name = "TestPlayer"
+            you = actors.Player("Tester")
+            you.setLevel(3)
             guardA = enemies.Guard()
-            guardB = enemies.Guard()
+            guardB = enemies.GuardCaptain()
             battle(you,[guardA, guardB])
         elif debug and choice == "CHAPTER SELECT":
             while True:

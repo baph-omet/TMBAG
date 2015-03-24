@@ -18,7 +18,7 @@ def targetSelect(enemies):
                     return enemies[0]
                 else:
                     methods.text("Incorrect target")
-            except NameError:
+            except:
                 methods.text("Incorrect target, pick a number")
     else:
         return enemies[0]
@@ -82,7 +82,7 @@ def battle(hero,enemies,escape=True):
             print("*" * 12)
             print("| " + en.name + " " + enemyNumber)
             print("| HP: " + str(en.health) + "/" + str(en.maxHealth))
-            print("| SP: " + str(hero.specialPoints) + "/" + str(hero.maxSpecialPoints))
+            print("| SP: " + str(en.specialPoints) + "/" + str(en.maxSpecialPoints))
             if en.guarding:
                 print("| Defending!")
             print("*" * 12)
@@ -95,7 +95,10 @@ def battle(hero,enemies,escape=True):
                 hero.attack(targetSelect(enemies))
                 break
             elif battleChoice == "SPECIAL":
-                hero.specialAttack(hero.chooseSpecial(),targetSelect(enemies))
+                specialChoice = hero.chooseSpecial()
+                if specialChoice:
+                    hero.specialAttack(specialChoice,targetSelect(enemies))
+                    break
             elif battleChoice == "DEFEND":
                 hero.defend()
                 break

@@ -14,8 +14,6 @@ class Actor:
         self.accuracyMod = 0
         self.critMod = 0
         self.specialPoints = 3
-        self.specials = []
-        self.maxSpecialPoints = 3
         
     name = "Dummy"
     desc = ""
@@ -115,6 +113,9 @@ class Actor:
             text(self.name + " attacked " + target.name + " for " + str(damage) + " damage.")
             target.health -= damage
             
+        # Decrement user's SP
+        self.specialPoints -= specialChoice.specialPointCost
+            
     # Enables the user's guard, which raises defense by 1 until next turn
     def defend(self):
         if not self.guarding:
@@ -150,13 +151,16 @@ class Actor:
                     text("It had no effect!")
                     return
                    
-                self.items[itemChoice.name] -= 1
-                if self.items[itemChoice.name] <= 0:
-                    self.items[itemChoice.name] = 0
-                    if type(self) == Player:
-                        text("You used your last " + itemChoice.name)
-                    else:
-                        text(self.name + " used their last " + itemChoice.name + "!")
+                if type(self) == Player:
+                    self.items[itemChoice.name] -= 1
+                    if self.items[itemChoice.name] <= 0:
+                        self.items[itemChoice.name] = 0
+                        if type(self) == Player:
+                            text("You used your last " + itemChoice.name)
+                        else:
+                            text(self.name + " used their last " + itemChoice.name + "!")
+                else:
+                    self.items.remove(itemChoice)
                 return
         
         # If the selected item is equipment, equip it
@@ -179,8 +183,11 @@ class Actor:
     # Chooses a special attack
     def chooseSpecial(self):
         # For players...
+        specialChoice = None
         if type(self) == Player and not self.specials:
-            pass
+            text("No specials known")
+            return
+        
         if type(self) == Player:
             # Basically just get a list of the names of all the player's specials, pass them to options(), then get the special attack that corresponds to the choice
             sChoices = []
@@ -188,8 +195,11 @@ class Actor:
                 sChoices.append(s.name)
             specialChoiceStr = options(self,sChoices)
             for s in self.specials:
-                if specialChoiceStr == s.name:
+                if specialChoiceStr == s.name.upper():
                     specialChoice = s
+            if self.specialPoints < specialChoice.specialPointCost:
+                text("You don't have enough SP for this Special.\nYour SP: " + str(self.specialPoints) + "/" + str(self.maxSpecialPoints) + " Required SP for " + specialChoice.name + ": " + str(specialChoice.specialPointCost))
+                return
                     
         # For enemies...
         else:
@@ -201,6 +211,9 @@ class Actor:
             # Else randomly pick from their pool of specials, then use it
             else:
                 specialChoice = random.choice(self.specials)
+                if self.specialPoints < specialChoice.specialPointCost:
+                    self.defend()
+                    return
         
         # Return whatever was chosen
         return specialChoice
@@ -221,6 +234,9 @@ class Player(Actor):
         self.accuracy = 0.95
         self.critChance = 0.01
         self.items = {}
+        self.specialPoints = 3
+        self.specials = []
+        self.maxSpecialPoints = 3
         self.equipment = [
             "",
             "",
@@ -274,32 +290,61 @@ class Player(Actor):
             text("You don't have any items!")
         
     # Gives the player 1 of a specified item (may update to allow multiples)
-    def giveItem(self,itemName):
-        # Check to see if the item is a consumable
+    def giveItem(self,item,amount=1):
+        if type(amount) != Int or amount < 0:
+			text("Invalid amount.")
+			return
+		# Check to see if the item is a consumable
         for i in items.Consumable.__subclasses__():
             # If a match is found...
-            if itemName == i.name:
+            if item.name == i.name:
                 # Increases value of the key matching the item by 1, or initializes it to 1 if it doesn't yet exist
-                if itemName in self.items:
-                    self.items[itemName] += 1
+                if item.name in self.items:
+                    self.items[item.name] += amount
                 else:
-                    self.items[itemName] = 1
-                text(self.name + " received a " + itemName)
-                return
-        
-        # If the item is NOT a consumable, check to see if it's equipment
-        for i in items.Equipment.__subclasses__():
-            # See comments in above block
-            if itemName == i.name:
-                if itemName in self.items:
-                    self.items[itemName] += 1
-                else:
-                    self.items[itemName] = 1
-                text(self.name + " received a " + itemName)
-                return
+                    self.items[item.name] = amount
+				break
+		else: 
+			# If the item is NOT a consumable, check to see if it's equipment
+			for i in items.Equipment.__subclasses__():
+				# See comments in above block
+				if item.name == i.name:
+					if item.name in self.items:
+						self.items[item.name] += amount
+					else:
+						self.items[item.name] = amount
+					text(self.name + " received a " + item.name)
+			else:
+				return
+		if amount != 1:
+			text(self.name + " received " + item.name + " x" + str(amount))
+		else:
+			text(self.name + " received a " + item.name)
         # If the item is neither consumable nor equipment, the function neither returns nor outputs anything
 
-    # Unequips items to the player's inventory. equippedItem is an OBJECT         
+	# Silently removes items from the player's inventory. Only prints stuff if the function is used incorrectly. Use with a itemChoose() method to guarantee that the item is in the player's inventory.
+	def removeItem(self,item,amount=1):
+		# If the item specified is "all", empty the inventory
+		if item.upper == "ALL":
+			self.items = {}
+		
+		# If the user inputs a negative amount
+		elif amount < 0:
+			text("Attempted to remove a negative number of items from the player. This doesn't make sense. You dun goof'd")
+			
+		# If the user inputs any other nonsensical value for the amount
+		elif type(amount) != Int and amount != "all":
+			text("You put a nonsensical amount in this function call. Wuzzamattawichu")
+			
+		# Otherwise, subtract amount of item from the player
+		elif self.items[item.name] > amount:
+			self.items[item.name] -= amount
+		elif:
+			self.items[item.name] = 0
+			
+			
+    
+	# Unequips items to the player's inventory. equippedItem is an OBJECT         
     def unequip(self,equippedItem):
         # If the slot for the item is not empty. Basically a failsafe in case somehow an empty slot is passed, which may happen when this method is called in other areas of the code
         if self.equipment[equippedItem.equipSlot] != "":
@@ -360,7 +405,15 @@ class Player(Actor):
             self.items[tossItem] -= 1
             text(self.name + " threw away 1 " + tossItem.name)
         
-    # Examine an enemy during battle. target is passed by the battle engine, and is an OBJECT
+    # Silently remove an item from the player's inventory. Should be for internal use only.
+	def removeItem(self,item,amount=1):
+		if self.items[item.name]:
+			if amount == "all":
+				self.items[item.name] = 0
+			else:
+				self.items[item.name] -= amount
+	
+	# Examine an enemy during battle. target is passed by the battle engine, and is an OBJECT
     def examine(self,target):
         # Print the target's stats
         # FUTURE NOTE: May add a check to make sure that the target is an enemy, to prevent crashes, even though this is probably redundant by this point.
@@ -443,11 +496,12 @@ class Player(Actor):
         self.specialPoints = self.maxSpecialPoints
         print("SP + 1")
         
-        # Defense is increased by 1
+        # Defense is increased by 1 on odd numbered levels
         # Initial: 0
-        # defense = level - 1
-        self.defense += 1
-        print("Defense + 1")
+        # defense = level // 2
+        if self.level % 2 == 1:
+            self.defense += 1
+            print("Defense + 1")
         
         # Health is refilled (I love it when games do this)
         self.health = self.maxHealth
@@ -469,6 +523,17 @@ class Player(Actor):
                 self.learnSpecial(specials.HeavyStrike)
             elif self.strength < self.dexterity:
                 self.learnSpecial(specials.PowerShot)
+    
+    # Debug function that sets a player to a level and sets their base stats. Assumes strength upgrades were chosen on every level instead of dexerity
+    def setLevel(self,newLevel):
+        self.expNextLevel = 5 * 2 ** (newLevel - 1)
+        self.critChance = 0.01 + int(sum(range(2,newLevel))) * 0.01
+        self.maxSpecialPoints = 2 + newLevel
+        self.maxHealth = 10 + sum(range(2,newLevel))
+        self.health = self.maxHealth
+        self.defense = (newLevel - 1) // 2
+        self.strength = newLevel
+        self.specials = [specials.HeavyStrike]
     
     # Adds a special move to the player's repertoire
     def learnSpecial(self,newSpecial):
@@ -526,8 +591,11 @@ class Enemy(Actor):
             self.defend()
         elif action <= (self.attackChance + self.defendChance + self.itemChance) and action > (self.attackChance + self.defendChance):
             self.itemUse()
+            text
         elif action <= (self.attackChance + self.defendChance + self.itemChance + self.specialChance) and action > (self.attackChance + self.defendChance + self.itemChance):
-            self.specialAttack(self.chooseSpecial, target)
+            specialChoice = self.chooseSpecial()
+            if specialChoice:
+                self.specialAttack(specialChoice, target)
 
     ''' Varible definitions:
 

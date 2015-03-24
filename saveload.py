@@ -102,7 +102,7 @@ def loadGame(player):
     player.critChance = 0.01 + int(sum(range(2,player.level))) * 0.01
     player.maxSpecialPoints = 2 + player.level
     player.maxHealth = 10 + sum(range(2,player.level))
-    player.defense = player.level - 1
+    player.defense = (player.level - 1) // 2
     player.strength = eval(stats[4])
     player.dexterity = eval(stats[5])
     player.exp = eval(stats[6])
@@ -111,7 +111,6 @@ def loadGame(player):
     player.equipment = literal_eval(stats[9])
     player.specials = literal_eval(stats[10])
     player.specialPoints = eval(stats[11])
-    print(player.name,player.money,player.level,player.expNextLevel,player.critChance,player.maxSpecialPoints,player.maxHealth,player.defense,player.strength,player.dexterity,player.exp,player.health,player.items,player.equipment,player.specials,player.specialPoints)
     text("Game loaded! Welcome back, " + player.name + "!")
     loadFile.close()
     return chapter

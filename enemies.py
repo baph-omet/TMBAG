@@ -1,10 +1,12 @@
 from actors import Enemy
+import items
+import specials
 
 class Guard(Enemy):
     def __init__(self):
         Enemy.__init__(self)
         self.health = 3
-        self.maxSpecialPoints = 0
+        self.specialPoints = 0
         
     name = "Guard"
     desc = "An alien guard. Blueish-gray skin, four deep, black eyes. Carries a spear."
@@ -20,19 +22,20 @@ class Guard(Enemy):
     critChance = 0.01
     strength = 1
     defense = 0
+    maxSpecialPoints = 0
     
 class GuardCaptain(Enemy):
     def __init__(self):
         Enemy.__init__(self)
         self.health = 5
-        self.maxSpecialPoints = 3
+        self.specialPoints = 3
         
     name = "Guard Captain"
     desc = "A high-ranking alien guard. Taller and crustier than the foot soldiers."
     maxHealth = 5
     expYield = 3
-    items = ["Potion"]
-    specials = ["HeavyStrike"]
+    items = [items.Potion]
+    specials = [specials.HeavyStrike]
     attackChance = 0.6
     defendChance = 0.2
     itemChance = 0.1
@@ -41,3 +44,4 @@ class GuardCaptain(Enemy):
     critChance = 0.10
     strength = 2
     defense = 1
+    maxSpecialPoints = 3
